@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  producer:
+    build: .
+    depends_on:
+      - rabbitmq
+    command: python producer.py
+
+  consumer:
+    build: .
+    depends_on:
+      - rabbitmq
+      - redis
+    command: python consumer.py
+
+  worker:
+    build: .
+    depends_on:
+      - redis
+      - rabbitmq
+    command: celery -A worker worker --loglevel=info
